@@ -25,6 +25,36 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
+	num_particles = 100;
+	default_random_engine gen;
+
+	normal_distribution<double> noise_x(0, std[0]);
+	normal_distribution<double> noise_y(0, std[1]);
+	normal_distribution<double> noise_theta(0, std[2]);
+
+	// Initializing all particles to teh first position and setting all weights to 1
+	for (int i = 0; i < num_particles; i++) {
+
+		Particle new_particle;
+		new_particle.id = i;
+		new_particle.x = x;
+		new_particle.y = y;
+		new_particle.theta = theta;
+		new_particle.weight = 1.0;
+
+		// Adding some Gaussian noise
+		new_particle.x += noise_x(gen);
+		new_particle.y += noise_y(gen);
+		new_particle.theta += noise_theta(gen);
+
+		// Adding to vectors
+		particles.push_back(new_particle);
+		weights.push_back(new_particle.weight);
+
+	}
+
+	is_initialized = true;
+
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
@@ -33,6 +63,23 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
+	normal_distribution<double> noise_x(0, std[0]);
+	normal_distribution<double> noise_y(0, std[1]);
+	normal_distribution<double> noise_theta(0, std[2]);
+
+	// safe gaurd
+	if (fabs(yaw_rate) < 0.0001) {
+		yaw_rate = 0.0001;
+	}
+
+	// caluculating new state with noise
+	for (auto&& particle : particles) {
+
+		particle.x += (velocity / yaw_rate) * (sin(particle.theta + yaw_rate * delta_t) - sin(particle.theta)) + noise_x(gen);
+        particle.y += (velocity / yaw_rate) * (cos(particle.theta) - cos(particle.theta + yaw_rate * delta_t)) + noise_y(gen);
+        particle.theta += yaw_rate * delta_t + noise_theta(gen);
+	}
+
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
@@ -40,6 +87,22 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
+
+	double min_distance, dist, dx, dy;
+	int min_i;
+
+	for (int i = 0; i < observations.size(); i++) {
+
+		LandmarkObs obs = observations[i];
+
+		min_distance = INFINITY;
+		min_i = -1;
+
+		for (int j = 0; j < predicted.size(); j++) {
+			LandmarkObs predicted = predicted[j];
+			
+		}
+	}
 
 }
 
