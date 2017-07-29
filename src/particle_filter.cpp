@@ -88,20 +88,24 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
-	double min_distance, dist, dx, dy;
-	int min_i;
-
 	for (int i = 0; i < observations.size(); i++) {
 
 		LandmarkObs obs = observations[i];
 
-		min_distance = INFINITY;
-		min_i = -1;
+		double min_distance = INFINITY;
+		int min_i = -1;	// closest landmark id
 
 		for (int j = 0; j < predicted.size(); j++) {
 			LandmarkObs predicted = predicted[j];
-			
+
+			double distance = dist(obs.x, obs.y, predicted.x, predicted.y);
+			if (distance < min_distance) {
+				min_distance = distance;
+				min_i = predicted.id;
+			}
 		}
+
+		observations[i].id = min_i;
 	}
 
 }
@@ -125,6 +129,14 @@ void ParticleFilter::resample() {
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
+	discrete_distribution<int> d(weights.begin(), weights.end());
+	vector<Particle> new_particles;
+
+	for (int i = 0; i < num_particles; i++) {
+		new_particle.push_back(particles[d(gen)]);
+	}
+
+	particles = new_particles;
 }
 
 Particle ParticleFilter::SetAssociations(Particle particle, std::vector<int> associations, std::vector<double> sense_x, std::vector<double> sense_y)
